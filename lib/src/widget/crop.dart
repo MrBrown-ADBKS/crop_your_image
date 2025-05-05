@@ -35,6 +35,8 @@ typedef OverlayBuilder = Widget Function(BuildContext context, Rect rect);
 
 enum CropStatus { nothing, loading, ready, cropping }
 
+enum ManualZoom { zoomIn, zoomOut }
+
 /// Widget for the entry point of crop_your_image.
 class Crop extends StatelessWidget {
   /// original image data
@@ -151,6 +153,9 @@ class Crop extends StatelessWidget {
   /// The rendering quality of the image
   final FilterQuality filterQuality;
 
+  /// Show Manual Zoom
+  final bool? showManualZoom;
+
   Crop({
     super.key,
     required this.image,
@@ -178,6 +183,7 @@ class Crop extends StatelessWidget {
     this.scrollZoomSensitivity = 0.05,
     this.overlayBuilder,
     this.filterQuality = FilterQuality.medium,
+    this.showManualZoom = false,
   })  : this.imageParser = imageParser ?? defaultImageParser,
         this.formatDetector = formatDetector ?? defaultFormatDetector;
 
@@ -217,6 +223,7 @@ class Crop extends StatelessWidget {
             imageParser: imageParser,
             overlayBuilder: overlayBuilder,
             filterQuality: filterQuality,
+            showManualZoom: showManualZoom,
           ),
         );
       },
@@ -250,6 +257,7 @@ class _CropEditor extends StatefulWidget {
   final double scrollZoomSensitivity;
   final OverlayBuilder? overlayBuilder;
   final FilterQuality filterQuality;
+  final bool? showManualZoom;
 
   const _CropEditor({
     super.key,
@@ -278,6 +286,7 @@ class _CropEditor extends StatefulWidget {
     required this.scrollZoomSensitivity,
     this.overlayBuilder,
     required this.filterQuality,
+    this.showManualZoom,
   });
 
   @override
@@ -591,6 +600,20 @@ class _CropEditorState extends State<_CropEditor> {
     }
   }
 
+  /// Manual Zoom
+  void _manualZoom(ManualZoom zoom) {
+    if (zoom == ManualZoom.zoomIn) {
+      _applyScale(
+        _readyState.scale + widget.scrollZoomSensitivity,
+      );
+    }
+    if (zoom == ManualZoom.zoomOut) {
+      _applyScale(
+        _readyState.scale - widget.scrollZoomSensitivity,
+      );
+    }
+  }
+
   /// apply scale updated to view state
   void _applyScale(
     double nextScale, {
@@ -746,6 +769,33 @@ class _CropEditorState extends State<_CropEditor> {
                       const DotControl(),
                 ),
               ),
+              if (widget.showManualZoom == true)
+                Positioned(
+                  left: 0,
+                  bottom: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          _manualZoom(ManualZoom.zoomIn);
+                        },
+                        icon: Icon(
+                          Icons.zoom_in,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          _manualZoom(ManualZoom.zoomOut);
+                        },
+                        icon: Icon(
+                          Icons.zoom_out,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           );
   }
