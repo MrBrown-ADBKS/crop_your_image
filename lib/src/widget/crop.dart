@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:crop_your_image/crop_your_image.dart';
+import 'package:crop_your_image/src/design/background.dart';
 import 'package:crop_your_image/src/logic/shape.dart';
 import 'package:crop_your_image/src/widget/circle_crop_area_clipper.dart';
 import 'package:crop_your_image/src/widget/constants.dart';
@@ -635,11 +636,20 @@ class _CropEditorState extends State<_CropEditor> {
 
   @override
   Widget build(BuildContext context) {
+    double maxWidth = MediaQuery.of(context).size.width;
+    double maxHeight = MediaQuery.of(context).size.height;
     return !_viewState.isReady
         ? Center(child: widget.progressIndicator)
         : Stack(
             clipBehavior: widget.clipBehavior,
             children: [
+              Container(
+                width: maxWidth,
+                height: maxHeight,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(),
+                child: CheckerboardWidget(squareSize: 10),
+              ),
               Listener(
                 onPointerSignal: _handlePointerSignal,
                 child: GestureDetector(
