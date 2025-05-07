@@ -742,6 +742,9 @@ class _CropEditorState extends State<_CropEditor> {
                       : (details) => _updateCropRect(
                             _readyState.moveTopRight(details.delta),
                           ),
+                  // onPanUpdate: (details) => _updateCropRect(
+                  //   _readyState.moveTopRight(details.delta),
+                  // ),
                   child: widget.cornerDotBuilder
                           ?.call(dotTotalSize, EdgeAlignment.topRight) ??
                       const DotControl(),
