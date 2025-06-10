@@ -121,6 +121,7 @@ class _CropSampleState extends State<CropSample> {
                     children: [
                       if (_imageDataList.isNotEmpty) ...[
                         Crop(
+                          showManualZoom: true,
                           willUpdateScale: (newScale) => newScale < 5,
                           controller: _cropController,
                           image: _imageDataList[_currentImage],
