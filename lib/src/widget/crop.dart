@@ -8,6 +8,7 @@ import 'package:crop_your_image/src/widget/constants.dart';
 import 'package:crop_your_image/src/widget/crop_editor_view_state.dart';
 import 'package:crop_your_image/src/widget/history_state.dart';
 import 'package:crop_your_image/src/widget/rect_crop_area_clipper.dart';
+import 'package:crop_your_image/src/widget/zoom_slider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -315,8 +316,8 @@ class _CropEditorState extends State<_CropEditor> {
   double? _sizeCache;
 
   double _currentZoom = 1.0;
-  final _minZoomLevel = 1.0;
-  final _maxZoomLevel = 4.0;
+  double _minZoomLevel = 1.0;
+  double _maxZoomLevel = 4.0;
 
   @override
   void initState() {
@@ -813,37 +814,17 @@ class _CropEditorState extends State<_CropEditor> {
                 ),
               ),
               if (widget.showManualZoom == true)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.image,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    SizedBox(
-                      width: 200,
-                      child: Slider(
-                        thumbColor: Theme.of(context).colorScheme.primary,
-                        activeColor: Theme.of(context).colorScheme.primary,
-                        min: _minZoomLevel,
-                        max: _maxZoomLevel,
-                        value: _currentZoom,
-                        onChanged: (value) {
-                          setState(() {
-                            _currentZoom = value;
-                            _manualZoom(value);
-                          });
-                        },
-                      ),
-                    ),
-                    Icon(
-                      Icons.photo,
-                      size: 32,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ],
-                ),
+                ZoomSlider(
+                  minZoom: _minZoomLevel,
+                  maxZoom: _maxZoomLevel,
+                  currentZoom: _currentZoom,
+                  onZoomChanged: (value) {
+                    setState(() {
+                      _currentZoom = value;
+                      _manualZoom(value);
+                    });
+                  },
+                )
             ],
           );
   }
