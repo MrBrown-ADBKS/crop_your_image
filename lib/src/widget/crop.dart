@@ -19,8 +19,7 @@ typedef History = ({int undoCount, int redoCount});
 typedef HistoryChangedCallback = void Function(History history);
 
 typedef WillUpdateScale = bool Function(double newScale);
-typedef CornerDotBuilder = Widget Function(
-    double size, EdgeAlignment edgeAlignment);
+typedef CornerDotBuilder = Widget Function(double size, EdgeAlignment edgeAlignment);
 
 typedef CroppingRectBuilder = ViewportBasedRect Function(
   ViewportBasedRect viewportRect,
@@ -305,8 +304,7 @@ class _CropEditorState extends State<_CropEditor> {
   /// history is stored when zoom / pan is changed, as well as crop rect moved.
   late final HistoryState _historyState;
 
-  ReadyCropEditorViewState get _readyState =>
-      _viewState as ReadyCropEditorViewState;
+  ReadyCropEditorViewState get _readyState => _viewState as ReadyCropEditorViewState;
 
   /// image with detail info parsed with [widget.imageParser]
   ImageDetail? _parsedImageDetail;
@@ -419,9 +417,7 @@ class _CropEditorState extends State<_CropEditor> {
     required FormatDetector? formatDetector,
     required Uint8List image,
   }) async {
-    if (_lastParser == parser &&
-        _lastImage == image &&
-        _lastFormatDetector == formatDetector) {
+    if (_lastParser == parser && _lastImage == image && _lastFormatDetector == formatDetector) {
       // no change
       return _parsedImageDetail;
     }
