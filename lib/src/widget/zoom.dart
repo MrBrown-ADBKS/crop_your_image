@@ -45,119 +45,16 @@ class Zoom extends StatelessWidget {
 
     switch (displayMode) {
       case ZoomDisplayMode.sliderOnly:
-        children.addAll([
-          Icon(
-            Icons.image,
-            size: _iconSmallSize,
-            color: Theme.of(context).colorScheme.secondary,
-          ),
-          SizedBox(
-            width: _sliderWidth,
-            child: Slider(
-              thumbColor: Theme.of(context).colorScheme.primary,
-              activeColor: Theme.of(context).colorScheme.primary,
-              min: minZoom,
-              max: maxZoom,
-              value: currentZoom,
-              onChanged: onZoomChanged,
-            ),
-          ),
-          Icon(
-            Icons.photo,
-            size: _iconBigSize,
-            color: Theme.of(context).colorScheme.secondary,
-          ),
-        ]);
+        children = _buildSliderOnly(context);
         break;
-
       case ZoomDisplayMode.buttonsOnly:
-        children.addAll([
-          IconButton(
-            color: Theme.of(context).colorScheme.secondary,
-            onPressed: onZoomOut,
-            icon: Icon(
-              Icons.zoom_out,
-            ),
-          ),
-          IconButton(
-            color: Theme.of(context).colorScheme.secondary,
-            onPressed: onZoomIn,
-            icon: Icon(
-              Icons.zoom_in,
-            ),
-          ),
-        ]);
+        children = _buildButtonsOnly(context);
         break;
-
       case ZoomDisplayMode.sliderWithButtons:
-        children.addAll([
-          IconButton(
-            icon: Icon(
-              Icons.zoom_out,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-            onPressed: onZoomOut,
-          ),
-          SizedBox(
-            width: _sliderWidth,
-            child: Slider(
-              thumbColor: Theme.of(context).colorScheme.primary,
-              activeColor: Theme.of(context).colorScheme.primary,
-              min: minZoom,
-              max: maxZoom,
-              value: currentZoom,
-              onChanged: onZoomChanged,
-            ),
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.zoom_in,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-            onPressed: onZoomIn,
-          ),
-        ]);
+        children = _buildSliderWithButtons(context);
         break;
-
       case ZoomDisplayMode.separateButtonsAndSlider:
-        children.addAll([
-          IconButton(
-            color: Theme.of(context).colorScheme.secondary,
-            onPressed: onZoomOut,
-            icon: Icon(
-              Icons.zoom_out,
-            ),
-          ),
-          IconButton(
-            color: Theme.of(context).colorScheme.secondary,
-            onPressed: onZoomIn,
-            icon: Icon(
-              Icons.zoom_in,
-            ),
-          ),
-          Spacer(),
-          Icon(
-            Icons.image,
-            size: _iconSmallSize,
-            color: Theme.of(context).colorScheme.secondary,
-          ),
-          SizedBox(
-            width: _sliderWidth,
-            child: Slider(
-              thumbColor: Theme.of(context).colorScheme.primary,
-              activeColor: Theme.of(context).colorScheme.primary,
-              min: minZoom,
-              max: maxZoom,
-              value: currentZoom,
-              onChanged: onZoomChanged,
-            ),
-          ),
-          Icon(
-            Icons.photo,
-            size: _iconBigSize,
-            color: Theme.of(context).colorScheme.secondary,
-          ),
-        ]);
+        children = _buildSeparateButtonsAndSlider(context);
         break;
     }
 
@@ -166,4 +63,53 @@ class Zoom extends StatelessWidget {
       children: children,
     );
   }
+
+  List<Widget> _buildSliderOnly(BuildContext context) => [
+        _icon(Icons.image, _iconSmallSize, context),
+        _slider(context),
+        _icon(Icons.photo, _iconBigSize, context),
+      ];
+
+  List<Widget> _buildButtonsOnly(BuildContext context) => [
+        _zoomButton(Icons.zoom_out, onZoomOut!, context),
+        _zoomButton(Icons.zoom_in, onZoomIn!, context),
+      ];
+
+  List<Widget> _buildSliderWithButtons(BuildContext context) => [
+        _zoomButton(Icons.zoom_out, onZoomOut!, context),
+        _slider(context),
+        _zoomButton(Icons.zoom_in, onZoomIn!, context),
+      ];
+
+  List<Widget> _buildSeparateButtonsAndSlider(BuildContext context) => [
+        _zoomButton(Icons.zoom_out, onZoomOut!, context),
+        _zoomButton(Icons.zoom_in, onZoomIn!, context),
+        const Spacer(),
+        _icon(Icons.image, _iconSmallSize, context),
+        _slider(context),
+        _icon(Icons.photo, _iconBigSize, context),
+      ];
+
+  Widget _slider(BuildContext context) => SizedBox(
+        width: _sliderWidth,
+        child: Slider(
+          thumbColor: Theme.of(context).colorScheme.primary,
+          activeColor: Theme.of(context).colorScheme.primary,
+          min: minZoom,
+          max: maxZoom,
+          value: currentZoom,
+          onChanged: onZoomChanged,
+        ),
+      );
+
+  Widget _zoomButton(IconData icon, VoidCallback onPressed, BuildContext context) => IconButton(
+        icon: Icon(icon, color: Theme.of(context).colorScheme.secondary),
+        onPressed: onPressed,
+      );
+
+  Widget _icon(IconData icon, double size, BuildContext context) => Icon(
+        icon,
+        size: size,
+        color: Theme.of(context).colorScheme.secondary,
+      );
 }
