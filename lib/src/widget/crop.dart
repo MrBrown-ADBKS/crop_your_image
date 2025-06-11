@@ -8,7 +8,8 @@ import 'package:crop_your_image/src/widget/constants.dart';
 import 'package:crop_your_image/src/widget/crop_editor_view_state.dart';
 import 'package:crop_your_image/src/widget/history_state.dart';
 import 'package:crop_your_image/src/widget/rect_crop_area_clipper.dart';
-import 'package:crop_your_image/src/widget/zoom_slider.dart';
+import 'package:crop_your_image/src/widget/zoom.dart';
+import '../logic/models/zoom_display_mode.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -315,9 +316,14 @@ class _CropEditorState extends State<_CropEditor> {
 
   double? _sizeCache;
 
+  /*
+  * NOTE: Seems like anything above 5 doesn't change the image.
+  *       Does go down below 1 depending on the crop rect selected.
+  *       scaleUpdated() within _readyState seems to be clamping the scale?
+  */
   double _currentZoom = 1.0;
-  double _minZoomLevel = 1.0;
-  double _maxZoomLevel = 4.0;
+  double _minZoomLevel = 0;
+  double _maxZoomLevel = 5.0;
 
   @override
   void initState() {
@@ -602,23 +608,24 @@ class _CropEditorState extends State<_CropEditor> {
     }
   }
 
-  /// Manual Zoom
-  void _manualZoom(double scale) {
+  /// Scroll Zoom
+  void _scrollZoom(double scale) {
     _applyScale(scale);
   }
 
-  // void _manualZoom(ManualZoom zoom) {
-  //   if (zoom == ManualZoom.zoomIn) {
-  //     _applyScale(
-  //       _readyState.scale + widget.scrollZoomSensitivity,
-  //     );
-  //   }
-  //   if (zoom == ManualZoom.zoomOut) {
-  //     _applyScale(
-  //       _readyState.scale - widget.scrollZoomSensitivity,
-  //     );
-  //   }
-  // }
+  /// Manual Zoom
+  void _manualZoom(ManualZoom zoom) {
+    if (zoom == ManualZoom.zoomIn) {
+      _applyScale(
+        _readyState.scale + widget.scrollZoomSensitivity,
+      );
+    }
+    if (zoom == ManualZoom.zoomOut) {
+      _applyScale(
+        _readyState.scale - widget.scrollZoomSensitivity,
+      );
+    }
+  }
 
   /// apply scale updated to view state
   void _applyScale(
@@ -636,6 +643,7 @@ class _CropEditorState extends State<_CropEditor> {
         focalPoint: focalPoint,
       );
       widget.onImageMoved?.call(_readyState.imageRect);
+      _currentZoom = nextScale;
     });
   }
 
@@ -783,48 +791,29 @@ class _CropEditorState extends State<_CropEditor> {
                             const DotControl(),
                       ),
                     ),
-                    // if (widget.showManualZoom == true)
-                    // Positioned(
-                    //   left: 0,
-                    //   bottom: 0,
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.start,
-                    //     mainAxisSize: MainAxisSize.min,
-                    //     children: [
-                    //       IconButton(
-                    //         onPressed: () {
-                    //           _manualZoom(ManualZoom.zoomIn);
-                    //         },
-                    //         icon: Icon(
-                    //           Icons.zoom_in,
-                    //         ),
-                    //       ),
-                    //       IconButton(
-                    //         onPressed: () {
-                    //           _manualZoom(ManualZoom.zoomOut);
-                    //         },
-                    //         icon: Icon(
-                    //           Icons.zoom_out,
-                    //         ),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
               if (widget.showManualZoom == true)
-                ZoomSlider(
-                  minZoom: _minZoomLevel,
-                  maxZoom: _maxZoomLevel,
-                  currentZoom: _currentZoom,
-                  onZoomChanged: (value) {
-                    setState(() {
-                      _currentZoom = value;
-                      _manualZoom(value);
-                    });
-                  },
-                )
+                Center(
+                  child: Container(
+                    width: 500,
+                    child: Zoom(
+                      minZoom: _minZoomLevel,
+                      maxZoom: _maxZoomLevel,
+                      currentZoom: _currentZoom,
+                      displayMode: ZoomDisplayMode.separateButtonsAndSlider,
+                      onZoomChanged: (value) {
+                        setState(() {
+                          _currentZoom = value;
+                          _scrollZoom(value);
+                        });
+                      },
+                      onZoomIn: () => _manualZoom(ManualZoom.zoomIn),
+                      onZoomOut: () => _manualZoom(ManualZoom.zoomOut),
+                    ),
+                  ),
+                ),
             ],
           );
   }
