@@ -798,19 +798,61 @@ class _CropEditorState extends State<_CropEditor> {
                 Center(
                   child: Container(
                     width: 500,
-                    child: Zoom(
-                      minZoom: _minZoomLevel,
-                      maxZoom: _maxZoomLevel,
-                      currentZoom: _currentZoom,
-                      displayMode: ZoomDisplayMode.separateButtonsAndSlider,
-                      onZoomChanged: (value) {
-                        setState(() {
-                          _currentZoom = value;
-                          _scrollZoom(value);
-                        });
-                      },
-                      onZoomIn: () => _manualZoom(ManualZoom.zoomIn),
-                      onZoomOut: () => _manualZoom(ManualZoom.zoomOut),
+                    child: Column(
+                      children: [
+                        Text('Option One - Slider Only'),
+                        Zoom(
+                          minZoom: _minZoomLevel,
+                          maxZoom: _maxZoomLevel,
+                          currentZoom: _currentZoom,
+                          displayMode: ZoomDisplayMode.sliderOnly,
+                          onZoomChanged: (value) {
+                            setState(() {
+                              _currentZoom = value;
+                              _scrollZoom(value);
+                            });
+                          },
+                        ),
+                        Text('Option Two - Slider w/Buttons'),
+                        Zoom(
+                          minZoom: _minZoomLevel,
+                          maxZoom: _maxZoomLevel,
+                          currentZoom: _currentZoom,
+                          displayMode: ZoomDisplayMode.sliderWithButtons,
+                          onZoomChanged: (value) {
+                            setState(() {
+                              _currentZoom = value;
+                              _scrollZoom(value);
+                            });
+                          },
+                          onZoomIn: () => _manualZoom(ManualZoom.zoomIn),
+                          onZoomOut: () => _manualZoom(ManualZoom.zoomOut),
+                        ),
+                        Text('Option Three - Both Slider and Buttons'),
+                        Zoom(
+                          minZoom: _minZoomLevel,
+                          maxZoom: _maxZoomLevel,
+                          currentZoom: _currentZoom,
+                          displayMode: ZoomDisplayMode.separateButtonsAndSlider,
+                          onZoomChanged: (value) {
+                            setState(() {
+                              _currentZoom = value;
+                              _scrollZoom(value);
+                            });
+                          },
+                          onZoomIn: () => _manualZoom(ManualZoom.zoomIn),
+                          onZoomOut: () => _manualZoom(ManualZoom.zoomOut),
+                        ),
+                        Text('Option Four - Buttons Only'),
+                        Zoom(
+                          minZoom: _minZoomLevel,
+                          maxZoom: _maxZoomLevel,
+                          currentZoom: _currentZoom,
+                          displayMode: ZoomDisplayMode.buttonsOnly,
+                          onZoomIn: () => _manualZoom(ManualZoom.zoomIn),
+                          onZoomOut: () => _manualZoom(ManualZoom.zoomOut),
+                        ),
+                      ],
                     ),
                   ),
                 ),
