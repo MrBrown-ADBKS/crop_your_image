@@ -317,18 +317,30 @@ class _CropEditorState extends State<_CropEditor> {
 
   double? _sizeCache;
 
-  /*
-  * NOTE: Seems like anything above 5 doesn't change the image.
-  *       Does go down below 1 depending on the crop rect selected.
-  *       scaleUpdated() within _readyState seems to be clamping the scale?
-  */
   double _currentZoom = 1.0;
-  double _minZoomLevel = 1.0;
+  /*
+  * TODO: Need to calculate _minZoomLevel
+  *   _parsedImageDetail and _readyState are both late
+  *
+  *   Required fields:
+  *   _parsedImageDetail.height;
+  *   _parsedImageDetail.width;
+  *   _readyState.imageRect.height;
+  *   _readyState.imageRect.width;
+  *   and aspect ratio
+  */
+  double _minZoomLevel = 0;
   double _maxZoomLevel = 5.0;
 
   @override
   void initState() {
     super.initState();
+
+    // if (_parsedImageDetail.height > _parsedImageDetail.width) {
+
+    // } else {
+
+    // }
 
     // prepare for controller
     _cropController = widget.controller ?? CropController();
@@ -644,11 +656,6 @@ class _CropEditorState extends State<_CropEditor> {
         focalPoint: focalPoint,
       );
       widget.onImageMoved?.call(_readyState.imageRect);
-
-      if (nextScale < 1.0) {
-        nextScale = 1.0;
-      }
-
       _currentZoom = nextScale;
       print(_currentZoom);
     });

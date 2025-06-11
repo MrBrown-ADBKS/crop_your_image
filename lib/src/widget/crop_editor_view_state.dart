@@ -246,8 +246,6 @@ class ReadyCropEditorViewState extends CropEditorViewState {
       return this;
     }
 
-
-
     // width
     final newWidth = baseSize.width * nextScale;
     final horizontalFocalPointBias =
