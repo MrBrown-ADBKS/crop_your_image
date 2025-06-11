@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:crop_your_image/src/design/background.dart';
@@ -322,7 +323,7 @@ class _CropEditorState extends State<_CropEditor> {
   *       scaleUpdated() within _readyState seems to be clamping the scale?
   */
   double _currentZoom = 1.0;
-  double _minZoomLevel = 0;
+  double _minZoomLevel = 1.0;
   double _maxZoomLevel = 5.0;
 
   @override
@@ -643,7 +644,13 @@ class _CropEditorState extends State<_CropEditor> {
         focalPoint: focalPoint,
       );
       widget.onImageMoved?.call(_readyState.imageRect);
+
+      if (nextScale < 1.0) {
+        nextScale = 1.0;
+      }
+
       _currentZoom = nextScale;
+      print(_currentZoom);
     });
   }
 
@@ -800,20 +807,21 @@ class _CropEditorState extends State<_CropEditor> {
                     width: 500,
                     child: Column(
                       children: [
-                        Text('Option One - Slider Only'),
-                        Zoom(
-                          minZoom: _minZoomLevel,
-                          maxZoom: _maxZoomLevel,
-                          currentZoom: _currentZoom,
-                          displayMode: ZoomDisplayMode.sliderOnly,
-                          onZoomChanged: (value) {
-                            setState(() {
-                              _currentZoom = value;
-                              _scrollZoom(value);
-                            });
-                          },
-                        ),
-                        Text('Option Two - Slider w/Buttons'),
+                        // Text('Option One - Slider Only'),
+                        // Zoom(
+                        //   minZoom: _minZoomLevel,
+                        //   maxZoom: _maxZoomLevel,
+                        //   currentZoom: _currentZoom,
+                        //   displayMode: ZoomDisplayMode.sliderOnly,
+                        //   onZoomChanged: (value) {
+                        //     setState(() {
+                        //       _currentZoom = value;
+                        //       _scrollZoom(value);
+                        //     });
+                        //   },
+                        // ),
+                        // Divider(),
+                        // Text('Option Two - Slider w/Buttons'),
                         Zoom(
                           minZoom: _minZoomLevel,
                           maxZoom: _maxZoomLevel,
@@ -828,30 +836,32 @@ class _CropEditorState extends State<_CropEditor> {
                           onZoomIn: () => _manualZoom(ManualZoom.zoomIn),
                           onZoomOut: () => _manualZoom(ManualZoom.zoomOut),
                         ),
-                        Text('Option Three - Both Slider and Buttons'),
-                        Zoom(
-                          minZoom: _minZoomLevel,
-                          maxZoom: _maxZoomLevel,
-                          currentZoom: _currentZoom,
-                          displayMode: ZoomDisplayMode.separateButtonsAndSlider,
-                          onZoomChanged: (value) {
-                            setState(() {
-                              _currentZoom = value;
-                              _scrollZoom(value);
-                            });
-                          },
-                          onZoomIn: () => _manualZoom(ManualZoom.zoomIn),
-                          onZoomOut: () => _manualZoom(ManualZoom.zoomOut),
-                        ),
-                        Text('Option Four - Buttons Only'),
-                        Zoom(
-                          minZoom: _minZoomLevel,
-                          maxZoom: _maxZoomLevel,
-                          currentZoom: _currentZoom,
-                          displayMode: ZoomDisplayMode.buttonsOnly,
-                          onZoomIn: () => _manualZoom(ManualZoom.zoomIn),
-                          onZoomOut: () => _manualZoom(ManualZoom.zoomOut),
-                        ),
+                        // Divider(),
+                        // Text('Option Three - Both Slider and Buttons'),
+                        // Zoom(
+                        //   minZoom: _minZoomLevel,
+                        //   maxZoom: _maxZoomLevel,
+                        //   currentZoom: _currentZoom,
+                        //   displayMode: ZoomDisplayMode.separateButtonsAndSlider,
+                        //   onZoomChanged: (value) {
+                        //     setState(() {
+                        //       _currentZoom = value;
+                        //       _scrollZoom(value);
+                        //     });
+                        //   },
+                        //   onZoomIn: () => _manualZoom(ManualZoom.zoomIn),
+                        //   onZoomOut: () => _manualZoom(ManualZoom.zoomOut),
+                        // ),
+                        // Divider(),
+                        // Text('Option Four - Buttons Only'),
+                        // Zoom(
+                        //   minZoom: _minZoomLevel,
+                        //   maxZoom: _maxZoomLevel,
+                        //   currentZoom: _currentZoom,
+                        //   displayMode: ZoomDisplayMode.buttonsOnly,
+                        //   onZoomIn: () => _manualZoom(ManualZoom.zoomIn),
+                        //   onZoomOut: () => _manualZoom(ManualZoom.zoomOut),
+                        // ),
                       ],
                     ),
                   ),

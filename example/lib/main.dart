@@ -99,21 +99,21 @@ class _CropSampleState extends State<CropSample> {
           visible: !_loadingImage && !_isCropping,
           child: Column(
             children: [
-              // if (_imageDataList.length >= 4)
-              //   Padding(
-              //     padding: const EdgeInsets.all(16),
-              //     child: Row(
-              //       children: [
-              //         _buildThumbnail(_imageDataList[0]),
-              //         const SizedBox(width: 16),
-              //         _buildThumbnail(_imageDataList[1]),
-              //         const SizedBox(width: 16),
-              //         _buildThumbnail(_imageDataList[2]),
-              //         const SizedBox(width: 16),
-              //         _buildThumbnail(_imageDataList[3]),
-              //       ],
-              //     ),
-              //   ),
+              if (_imageDataList.length >= 4)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      _buildThumbnail(_imageDataList[0]),
+                      const SizedBox(width: 16),
+                      _buildThumbnail(_imageDataList[1]),
+                      const SizedBox(width: 16),
+                      _buildThumbnail(_imageDataList[2]),
+                      const SizedBox(width: 16),
+                      _buildThumbnail(_imageDataList[3]),
+                    ],
+                  ),
+                ),
               Expanded(
                 child: Visibility(
                   visible: _croppedData == null,

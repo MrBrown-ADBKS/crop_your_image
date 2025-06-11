@@ -59,8 +59,7 @@ class ReadyCropEditorViewState extends CropEditorViewState {
     required bool withCircleUi,
   }) {
     final isFitVertically = imageSize.aspectRatio < viewportSize.aspectRatio;
-    final calculator =
-        isFitVertically ? VerticalCalculator() : HorizontalCalculator();
+    final calculator = isFitVertically ? VerticalCalculator() : HorizontalCalculator();
 
     return ReadyCropEditorViewState(
       viewportSize: viewportSize,
@@ -89,8 +88,7 @@ class ReadyCropEditorViewState extends CropEditorViewState {
 
   late final isFitVertically = imageSize.aspectRatio < viewportSize.aspectRatio;
 
-  late final calculator =
-      isFitVertically ? VerticalCalculator() : HorizontalCalculator();
+  late final calculator = isFitVertically ? VerticalCalculator() : HorizontalCalculator();
 
   late final screenSizeRatio = calculator.screenSizeRatio(
     imageSize,
@@ -244,30 +242,29 @@ class ReadyCropEditorViewState extends CropEditorViewState {
 
     // no change
     if (scale == nextScale) {
+      print('NO CHANGE $nextScale, $scale');
       return this;
     }
 
+
+
     // width
     final newWidth = baseSize.width * nextScale;
-    final horizontalFocalPointBias = focalPoint == null
-        ? 0.5
-        : (focalPoint.dx - imageRect.left) / imageRect.width;
-    final leftPositionDelta =
-        (newWidth - imageRect.width) * horizontalFocalPointBias;
+    final horizontalFocalPointBias =
+        focalPoint == null ? 0.5 : (focalPoint.dx - imageRect.left) / imageRect.width;
+    final leftPositionDelta = (newWidth - imageRect.width) * horizontalFocalPointBias;
 
     // height
     final newHeight = baseSize.height * nextScale;
-    final verticalFocalPointBias = focalPoint == null
-        ? 0.5
-        : (focalPoint.dy - imageRect.top) / imageRect.height;
-    final topPositionDelta =
-        (newHeight - imageRect.height) * verticalFocalPointBias;
+    final verticalFocalPointBias =
+        focalPoint == null ? 0.5 : (focalPoint.dy - imageRect.top) / imageRect.height;
+    final topPositionDelta = (newHeight - imageRect.height) * verticalFocalPointBias;
 
     // position
-    final newLeft = max(min(cropRect.left, imageRect.left - leftPositionDelta),
-        cropRect.right - newWidth);
-    final newTop = max(min(cropRect.top, imageRect.top - topPositionDelta),
-        cropRect.bottom - newHeight);
+    final newLeft =
+        max(min(cropRect.left, imageRect.left - leftPositionDelta), cropRect.right - newWidth);
+    final newTop =
+        max(min(cropRect.top, imageRect.top - topPositionDelta), cropRect.bottom - newHeight);
 
     return copyWith(
       scale: nextScale,
