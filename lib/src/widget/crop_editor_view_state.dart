@@ -240,8 +240,6 @@ class ReadyCropEditorViewState extends CropEditorViewState {
       max(cropRect.width / baseSize.width, cropRect.height / baseSize.height),
     );
 
-    print('SCALE: $scale, NEXTSCALE: $nextScale');
-
     // no change
     if (scale == nextScale) {
       return this;

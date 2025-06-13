@@ -318,17 +318,6 @@ class _CropEditorState extends State<_CropEditor> {
   double? _sizeCache;
 
   double _currentZoom = 1.0;
-  /*
-  * TODO: Need to calculate _minZoomLevel
-  *   _parsedImageDetail and _readyState are both late
-  *
-  *   Required fields:
-  *   _parsedImageDetail.height;
-  *   _parsedImageDetail.width;
-  *   _readyState.imageRect.height;
-  *   _readyState.imageRect.width;
-  *   and aspect ratio
-  */
   double _minZoomLevel = 0;
   double _maxZoomLevel = 5.0;
 
@@ -662,6 +651,9 @@ class _CropEditorState extends State<_CropEditor> {
     });
   }
 
+  /*
+  NOTE: There is a minor oddity where when moving slider to minimum position, then clicking zoom out button, the slider moves up slightly (more if a larger image). May have something to do with the DPI of the image.
+  */
   // set min zoom level depending on the image size and crop rect
   void _setMinZoomLevel() {
     var imageHeight = _parsedImageDetail!.height;
@@ -673,10 +665,6 @@ class _CropEditorState extends State<_CropEditor> {
       cropRectWidth / imageWidth,
       cropRectHeight / imageHeight,
     );
-
-    print({
-      'imageHeight: $imageHeight, imageWidth: $imageWidth, cropRectHeight: $cropRectHeight, cropRectWidth: $cropRectWidth, minZoomLevel: $_minZoomLevel'
-    });
   }
 
   @override
