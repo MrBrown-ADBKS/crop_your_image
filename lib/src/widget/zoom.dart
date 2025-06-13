@@ -95,6 +95,7 @@ class Zoom extends StatelessWidget {
         child: Slider(
           thumbColor: Theme.of(context).colorScheme.primary,
           activeColor: Theme.of(context).colorScheme.primary,
+          inactiveColor: Theme.of(context).colorScheme.secondary,
           min: minZoom,
           max: maxZoom,
           value: currentZoom,

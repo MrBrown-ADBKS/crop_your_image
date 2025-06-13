@@ -398,6 +398,7 @@ class _CropEditorState extends State<_CropEditor> {
   void _updateCropRect(CropEditorViewState newState) {
     setState(() => _viewState = newState);
     widget.onMoved?.call(_readyState.cropRect, _readyState.rectToCrop);
+    _setMinZoomLevel();
   }
 
   /// reset image to be cropped
@@ -658,6 +659,23 @@ class _CropEditorState extends State<_CropEditor> {
       widget.onImageMoved?.call(_readyState.imageRect);
       _currentZoom = nextScale;
       print(_currentZoom);
+    });
+  }
+
+  // set min zoom level depending on the image size and crop rect
+  void _setMinZoomLevel() {
+    var imageHeight = _parsedImageDetail!.height;
+    var imageWidth = _parsedImageDetail!.width;
+    var cropRectHeight = _readyState.cropRect.height;
+    var cropRectWidth = _readyState.cropRect.width;
+
+    _minZoomLevel = max(
+      cropRectWidth / imageWidth,
+      cropRectHeight / imageHeight,
+    );
+
+    print({
+      'imageHeight: $imageHeight, imageWidth: $imageWidth, cropRectHeight: $cropRectHeight, cropRectWidth: $cropRectWidth, minZoomLevel: $_minZoomLevel'
     });
   }
 
