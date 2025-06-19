@@ -158,7 +158,7 @@ class Crop extends StatelessWidget {
   final FilterQuality filterQuality;
 
   /// Show Manual Zoom
-  final bool? showManualZoom;
+  final ZoomDisplayMode? showManualZoom;
 
   Crop({
     super.key,
@@ -187,7 +187,7 @@ class Crop extends StatelessWidget {
     this.scrollZoomSensitivity = 0.05,
     this.overlayBuilder,
     this.filterQuality = FilterQuality.medium,
-    this.showManualZoom = false,
+    this.showManualZoom = null,
   })  : this.imageParser = imageParser ?? defaultImageParser,
         this.formatDetector = formatDetector ?? defaultFormatDetector;
 
@@ -261,7 +261,7 @@ class _CropEditor extends StatefulWidget {
   final double scrollZoomSensitivity;
   final OverlayBuilder? overlayBuilder;
   final FilterQuality filterQuality;
-  final bool? showManualZoom;
+  final ZoomDisplayMode? showManualZoom;
 
   const _CropEditor({
     super.key,
@@ -383,7 +383,9 @@ class _CropEditorState extends State<_CropEditor> {
   void _updateCropRect(CropEditorViewState newState) {
     setState(() => _viewState = newState);
     widget.onMoved?.call(_readyState.cropRect, _readyState.rectToCrop);
-    _setMinZoomLevel();
+
+    /// TODO: Sort the math for min size
+    // _setMinZoomLevel();
   }
 
   /// reset image to be cropped
@@ -822,10 +824,7 @@ class _CropEditorState extends State<_CropEditor> {
                   ],
                 ),
               ),
-              Center(
-                child: Text('Hello World!'),
-              ),
-              if (widget.showManualZoom == true)
+              if (widget.showManualZoom != null)
                 Center(
                   child: Container(
                     width: 500,
@@ -835,7 +834,7 @@ class _CropEditorState extends State<_CropEditor> {
                           minZoom: _minZoomLevel,
                           maxZoom: _maxZoomLevel,
                           currentZoom: _currentZoom,
-                          displayMode: ZoomDisplayMode.sliderWithButtons,
+                          displayMode: widget.showManualZoom!,
                           onZoomChanged: (value) {
                             setState(() {
                               _currentZoom = value;
