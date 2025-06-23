@@ -1,7 +1,7 @@
 name: crop_your_image
 description: crop_your_image helps your app to embed Widgets for cropping images.
 publish_to: none
-version: 2.0.0
+version: 2.0.1
 topics:
   - crop
   - image-cropper
