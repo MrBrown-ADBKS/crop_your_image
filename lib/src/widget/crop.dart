@@ -160,6 +160,9 @@ class Crop extends StatelessWidget {
   /// Show Manual Zoom
   final ZoomDisplayMode? showManualZoom;
 
+  /// Crop area container corner radius
+  final double? cornerRadius;
+
   Crop({
     super.key,
     required this.image,
@@ -188,6 +191,7 @@ class Crop extends StatelessWidget {
     this.overlayBuilder,
     this.filterQuality = FilterQuality.medium,
     this.showManualZoom = null,
+    this.cornerRadius,
   })  : this.imageParser = imageParser ?? defaultImageParser,
         this.formatDetector = formatDetector ?? defaultFormatDetector;
 
@@ -228,6 +232,7 @@ class Crop extends StatelessWidget {
             overlayBuilder: overlayBuilder,
             filterQuality: filterQuality,
             showManualZoom: showManualZoom,
+            cornerRadius: cornerRadius,
           ),
         );
       },
@@ -262,6 +267,7 @@ class _CropEditor extends StatefulWidget {
   final OverlayBuilder? overlayBuilder;
   final FilterQuality filterQuality;
   final ZoomDisplayMode? showManualZoom;
+  final double? cornerRadius;
 
   const _CropEditor({
     super.key,
@@ -291,6 +297,7 @@ class _CropEditor extends StatefulWidget {
     this.overlayBuilder,
     required this.filterQuality,
     this.showManualZoom,
+    this.cornerRadius,
   });
 
   @override
@@ -682,7 +689,10 @@ class _CropEditorState extends State<_CropEditor> {
                       width: maxWidth,
                       height: maxHeight,
                       clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(),
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            BorderRadius.circular(widget.cornerRadius ?? 0),
+                      ),
                       child: CheckerboardWidget(squareSize: 10),
                     ),
                     Listener(

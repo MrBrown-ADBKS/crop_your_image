@@ -29,7 +29,8 @@ class Zoom extends StatelessWidget {
           'onZoomChanged is required when displayMode is sliderOnly',
         ),
         assert(
-          displayMode != ZoomDisplayMode.buttonsOnly || (onZoomIn != null && onZoomOut != null),
+          displayMode != ZoomDisplayMode.buttonsOnly ||
+              (onZoomIn != null && onZoomOut != null),
           'onZoomIn and onZoomOut are required when displayMode is buttonsOnly',
         ),
         assert(
@@ -95,7 +96,7 @@ class Zoom extends StatelessWidget {
         child: Slider(
           thumbColor: Theme.of(context).colorScheme.primary,
           activeColor: Theme.of(context).colorScheme.primary,
-          inactiveColor: Theme.of(context).colorScheme.secondary,
+          inactiveColor: Theme.of(context).colorScheme.outlineVariant,
           min: minZoom,
           max: maxZoom,
           value: currentZoom,
@@ -103,14 +104,16 @@ class Zoom extends StatelessWidget {
         ),
       );
 
-  Widget _zoomButton(IconData icon, VoidCallback onPressed, BuildContext context) => IconButton(
-        icon: Icon(icon, color: Theme.of(context).colorScheme.secondary),
+  Widget _zoomButton(
+          IconData icon, VoidCallback onPressed, BuildContext context) =>
+      IconButton(
+        icon: Icon(icon, color: Theme.of(context).colorScheme.primary),
         onPressed: onPressed,
       );
 
   Widget _icon(IconData icon, double size, BuildContext context) => Icon(
         icon,
         size: size,
-        color: Theme.of(context).colorScheme.secondary,
+        color: Theme.of(context).colorScheme.primary,
       );
 }
