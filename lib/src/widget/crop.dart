@@ -1,12 +1,16 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:crop_your_image/crop_your_image.dart';
+import 'package:crop_your_image/src/design/background.dart';
 import 'package:crop_your_image/src/logic/shape.dart';
 import 'package:crop_your_image/src/widget/circle_crop_area_clipper.dart';
 import 'package:crop_your_image/src/widget/constants.dart';
 import 'package:crop_your_image/src/widget/crop_editor_view_state.dart';
 import 'package:crop_your_image/src/widget/history_state.dart';
 import 'package:crop_your_image/src/widget/rect_crop_area_clipper.dart';
+import 'package:crop_your_image/src/widget/zoom.dart';
+import '../logic/models/zoom_display_mode.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +38,8 @@ typedef OnMovedCallback = void Function(
 typedef OverlayBuilder = Widget Function(BuildContext context, Rect rect);
 
 enum CropStatus { nothing, loading, ready, cropping }
+
+enum ManualZoom { zoomIn, zoomOut }
 
 /// Widget for the entry point of crop_your_image.
 class Crop extends StatelessWidget {
@@ -151,6 +157,12 @@ class Crop extends StatelessWidget {
   /// The rendering quality of the image
   final FilterQuality filterQuality;
 
+  /// Show Manual Zoom
+  final ZoomDisplayMode? showManualZoom;
+
+  /// Crop area container corner radius
+  final double? cornerRadius;
+
   Crop({
     super.key,
     required this.image,
@@ -178,6 +190,8 @@ class Crop extends StatelessWidget {
     this.scrollZoomSensitivity = 0.05,
     this.overlayBuilder,
     this.filterQuality = FilterQuality.medium,
+    this.showManualZoom = null,
+    this.cornerRadius,
   })  : this.imageParser = imageParser ?? defaultImageParser,
         this.formatDetector = formatDetector ?? defaultFormatDetector;
 
@@ -217,6 +231,8 @@ class Crop extends StatelessWidget {
             imageParser: imageParser,
             overlayBuilder: overlayBuilder,
             filterQuality: filterQuality,
+            showManualZoom: showManualZoom,
+            cornerRadius: cornerRadius,
           ),
         );
       },
@@ -250,6 +266,8 @@ class _CropEditor extends StatefulWidget {
   final double scrollZoomSensitivity;
   final OverlayBuilder? overlayBuilder;
   final FilterQuality filterQuality;
+  final ZoomDisplayMode? showManualZoom;
+  final double? cornerRadius;
 
   const _CropEditor({
     super.key,
@@ -278,6 +296,8 @@ class _CropEditor extends StatefulWidget {
     required this.scrollZoomSensitivity,
     this.overlayBuilder,
     required this.filterQuality,
+    this.showManualZoom,
+    this.cornerRadius,
   });
 
   @override
@@ -305,6 +325,10 @@ class _CropEditorState extends State<_CropEditor> {
   ImageFormat? _detectedFormat;
 
   double? _sizeCache;
+
+  double _currentZoom = 1.0;
+  double _minZoomLevel = 0;
+  double _maxZoomLevel = 5.0;
 
   @override
   void initState() {
@@ -366,6 +390,9 @@ class _CropEditorState extends State<_CropEditor> {
   void _updateCropRect(CropEditorViewState newState) {
     setState(() => _viewState = newState);
     widget.onMoved?.call(_readyState.cropRect, _readyState.rectToCrop);
+
+    /// TODO: Sort the math for min size
+    // _setMinZoomLevel();
   }
 
   /// reset image to be cropped
@@ -591,6 +618,25 @@ class _CropEditorState extends State<_CropEditor> {
     }
   }
 
+  /// Scroll Zoom
+  void _scrollZoom(double scale) {
+    _applyScale(scale);
+  }
+
+  /// Manual Zoom
+  void _manualZoom(ManualZoom zoom) {
+    if (zoom == ManualZoom.zoomIn) {
+      _applyScale(
+        _readyState.scale + widget.scrollZoomSensitivity,
+      );
+    }
+    if (zoom == ManualZoom.zoomOut) {
+      _applyScale(
+        _readyState.scale - widget.scrollZoomSensitivity,
+      );
+    }
+  }
+
   /// apply scale updated to view state
   void _applyScale(
     double nextScale, {
@@ -607,145 +653,211 @@ class _CropEditorState extends State<_CropEditor> {
         focalPoint: focalPoint,
       );
       widget.onImageMoved?.call(_readyState.imageRect);
+      _currentZoom = nextScale;
     });
+  }
+
+  /*
+  NOTE: There is a minor oddity where when moving slider to minimum position, then clicking zoom out button, the slider moves up slightly (more if a larger image). May have something to do with the DPI of the image.
+  */
+  // set min zoom level depending on the image size and crop rect
+  void _setMinZoomLevel() {
+    var imageHeight = _parsedImageDetail!.height;
+    var imageWidth = _parsedImageDetail!.width;
+    var cropRectHeight = _readyState.cropRect.height;
+    var cropRectWidth = _readyState.cropRect.width;
+
+    _minZoomLevel = max(
+      cropRectWidth / imageWidth,
+      cropRectHeight / imageHeight,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    double maxWidth = MediaQuery.of(context).size.width;
+    double maxHeight = MediaQuery.of(context).size.height;
     return !_viewState.isReady
         ? Center(child: widget.progressIndicator)
-        : Stack(
-            clipBehavior: widget.clipBehavior,
+        : Column(
             children: [
-              Listener(
-                onPointerSignal: _handlePointerSignal,
-                child: GestureDetector(
-                  onScaleStart: widget.interactive ? _handleScaleStart : null,
-                  onScaleUpdate: widget.interactive ? _handleScaleUpdate : null,
-                  child: Container(
-                    color: widget.baseColor,
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    child: Stack(
-                      children: [
-                        SizedBox.expand(),
-                        Positioned(
-                          left: _readyState.imageRect.left,
-                          top: _readyState.imageRect.top,
-                          child: Image.memory(
-                            widget.image,
-                            width: _readyState.imageRect.width,
-                            height: _readyState.imageRect.height,
-                            fit: BoxFit.contain,
-                            filterQuality: widget.filterQuality,
+              Expanded(
+                child: Stack(
+                  clipBehavior: widget.clipBehavior,
+                  children: [
+                    Container(
+                      width: maxWidth,
+                      height: maxHeight,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            BorderRadius.circular(widget.cornerRadius ?? 0),
+                      ),
+                      child: CheckerboardWidget(squareSize: 10),
+                    ),
+                    Listener(
+                      onPointerSignal: _handlePointerSignal,
+                      child: GestureDetector(
+                        onScaleStart:
+                            widget.interactive ? _handleScaleStart : null,
+                        onScaleUpdate:
+                            widget.interactive ? _handleScaleUpdate : null,
+                        child: Container(
+                          color: widget.baseColor,
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height,
+                          child: Stack(
+                            children: [
+                              SizedBox.expand(),
+                              Positioned(
+                                left: _readyState.imageRect.left,
+                                top: _readyState.imageRect.top,
+                                child: Image.memory(
+                                  widget.image,
+                                  width: _readyState.imageRect.width,
+                                  height: _readyState.imageRect.height,
+                                  fit: BoxFit.contain,
+                                  filterQuality: widget.filterQuality,
+                                ),
+                              ),
+                            ],
                           ),
+                        ),
+                      ),
+                    ),
+                    if (widget.overlayBuilder != null)
+                      Positioned.fromRect(
+                        rect: _readyState.cropRect,
+                        child: IgnorePointer(
+                          child: widget.overlayBuilder!(
+                              context, _readyState.cropRect),
+                        ),
+                      ),
+                    IgnorePointer(
+                      child: ClipPath(
+                        clipper: _readyState.withCircleUi
+                            ? CircleCropAreaClipper(_readyState.cropRect)
+                            : CropAreaClipper(
+                                _readyState.cropRect, widget.radius),
+                        child: Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          color:
+                              widget.maskColor ?? Colors.black.withAlpha(100),
+                        ),
+                      ),
+                    ),
+                    if (!widget.interactive && !widget.fixCropRect)
+                      Positioned(
+                        left: _readyState.cropRect.left,
+                        top: _readyState.cropRect.top,
+                        child: GestureDetector(
+                          onPanStart: (details) =>
+                              _historyState.pushHistory(_readyState),
+                          onPanUpdate: (details) => _updateCropRect(
+                            _readyState.moveRect(details.delta),
+                          ),
+                          child: Container(
+                            width: _readyState.cropRect.width,
+                            height: _readyState.cropRect.height,
+                            color: Colors.transparent,
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      left: _readyState.cropRect.left - (dotTotalSize / 2),
+                      top: _readyState.cropRect.top - (dotTotalSize / 2),
+                      child: GestureDetector(
+                        onPanStart: (details) =>
+                            _historyState.pushHistory(_readyState),
+                        onPanUpdate: widget.fixCropRect
+                            ? null
+                            : (details) => _updateCropRect(
+                                  _readyState.moveTopLeft(details.delta),
+                                ),
+                        child: widget.cornerDotBuilder
+                                ?.call(dotTotalSize, EdgeAlignment.topLeft) ??
+                            const DotControl(),
+                      ),
+                    ),
+                    Positioned(
+                      left: _readyState.cropRect.right - (dotTotalSize / 2),
+                      top: _readyState.cropRect.top - (dotTotalSize / 2),
+                      child: GestureDetector(
+                        onPanStart: (details) =>
+                            _historyState.pushHistory(_readyState),
+                        onPanUpdate: widget.fixCropRect
+                            ? null
+                            : (details) => _updateCropRect(
+                                  _readyState.moveTopRight(details.delta),
+                                ),
+                        // onPanUpdate: (details) => _updateCropRect(
+                        //   _readyState.moveTopRight(details.delta),
+                        // ),
+                        child: widget.cornerDotBuilder
+                                ?.call(dotTotalSize, EdgeAlignment.topRight) ??
+                            const DotControl(),
+                      ),
+                    ),
+                    Positioned(
+                      left: _readyState.cropRect.left - (dotTotalSize / 2),
+                      top: _readyState.cropRect.bottom - (dotTotalSize / 2),
+                      child: GestureDetector(
+                        onPanStart: (details) =>
+                            _historyState.pushHistory(_readyState),
+                        onPanUpdate: widget.fixCropRect
+                            ? null
+                            : (details) => _updateCropRect(
+                                  _readyState.moveBottomLeft(details.delta),
+                                ),
+                        child: widget.cornerDotBuilder?.call(
+                                dotTotalSize, EdgeAlignment.bottomLeft) ??
+                            const DotControl(),
+                      ),
+                    ),
+                    Positioned(
+                      left: _readyState.cropRect.right - (dotTotalSize / 2),
+                      top: _readyState.cropRect.bottom - (dotTotalSize / 2),
+                      child: GestureDetector(
+                        onPanStart: (details) =>
+                            _historyState.pushHistory(_readyState),
+                        onPanUpdate: widget.fixCropRect
+                            ? null
+                            : (details) => _updateCropRect(
+                                  _readyState.moveBottomRight(details.delta),
+                                ),
+                        child: widget.cornerDotBuilder?.call(
+                                dotTotalSize, EdgeAlignment.bottomRight) ??
+                            const DotControl(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (widget.showManualZoom != null)
+                Center(
+                  child: Container(
+                    width: 500,
+                    child: Column(
+                      children: [
+                        Zoom(
+                          minZoom: _minZoomLevel,
+                          maxZoom: _maxZoomLevel,
+                          currentZoom: _currentZoom,
+                          displayMode: widget.showManualZoom!,
+                          onZoomChanged: (value) {
+                            setState(() {
+                              _currentZoom = value;
+                              _scrollZoom(value);
+                            });
+                          },
+                          onZoomIn: () => _manualZoom(ManualZoom.zoomIn),
+                          onZoomOut: () => _manualZoom(ManualZoom.zoomOut),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
-              if (widget.overlayBuilder != null)
-                Positioned.fromRect(
-                  rect: _readyState.cropRect,
-                  child: IgnorePointer(
-                    child:
-                        widget.overlayBuilder!(context, _readyState.cropRect),
-                  ),
-                ),
-              IgnorePointer(
-                child: ClipPath(
-                  clipper: _readyState.withCircleUi
-                      ? CircleCropAreaClipper(_readyState.cropRect)
-                      : CropAreaClipper(_readyState.cropRect, widget.radius),
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: widget.maskColor ?? Colors.black.withAlpha(100),
-                  ),
-                ),
-              ),
-              if (!widget.interactive && !widget.fixCropRect)
-                Positioned(
-                  left: _readyState.cropRect.left,
-                  top: _readyState.cropRect.top,
-                  child: GestureDetector(
-                    onPanStart: (details) =>
-                        _historyState.pushHistory(_readyState),
-                    onPanUpdate: (details) => _updateCropRect(
-                      _readyState.moveRect(details.delta),
-                    ),
-                    child: Container(
-                      width: _readyState.cropRect.width,
-                      height: _readyState.cropRect.height,
-                      color: Colors.transparent,
-                    ),
-                  ),
-                ),
-              Positioned(
-                left: _readyState.cropRect.left - (dotTotalSize / 2),
-                top: _readyState.cropRect.top - (dotTotalSize / 2),
-                child: GestureDetector(
-                  onPanStart: (details) =>
-                      _historyState.pushHistory(_readyState),
-                  onPanUpdate: widget.fixCropRect
-                      ? null
-                      : (details) => _updateCropRect(
-                            _readyState.moveTopLeft(details.delta),
-                          ),
-                  child: widget.cornerDotBuilder
-                          ?.call(dotTotalSize, EdgeAlignment.topLeft) ??
-                      const DotControl(),
-                ),
-              ),
-              Positioned(
-                left: _readyState.cropRect.right - (dotTotalSize / 2),
-                top: _readyState.cropRect.top - (dotTotalSize / 2),
-                child: GestureDetector(
-                  onPanStart: (details) =>
-                      _historyState.pushHistory(_readyState),
-                  onPanUpdate: widget.fixCropRect
-                      ? null
-                      : (details) => _updateCropRect(
-                            _readyState.moveTopRight(details.delta),
-                          ),
-                  child: widget.cornerDotBuilder
-                          ?.call(dotTotalSize, EdgeAlignment.topRight) ??
-                      const DotControl(),
-                ),
-              ),
-              Positioned(
-                left: _readyState.cropRect.left - (dotTotalSize / 2),
-                top: _readyState.cropRect.bottom - (dotTotalSize / 2),
-                child: GestureDetector(
-                  onPanStart: (details) =>
-                      _historyState.pushHistory(_readyState),
-                  onPanUpdate: widget.fixCropRect
-                      ? null
-                      : (details) => _updateCropRect(
-                            _readyState.moveBottomLeft(details.delta),
-                          ),
-                  child: widget.cornerDotBuilder
-                          ?.call(dotTotalSize, EdgeAlignment.bottomLeft) ??
-                      const DotControl(),
-                ),
-              ),
-              Positioned(
-                left: _readyState.cropRect.right - (dotTotalSize / 2),
-                top: _readyState.cropRect.bottom - (dotTotalSize / 2),
-                child: GestureDetector(
-                  onPanStart: (details) =>
-                      _historyState.pushHistory(_readyState),
-                  onPanUpdate: widget.fixCropRect
-                      ? null
-                      : (details) => _updateCropRect(
-                            _readyState.moveBottomRight(details.delta),
-                          ),
-                  child: widget.cornerDotBuilder
-                          ?.call(dotTotalSize, EdgeAlignment.bottomRight) ??
-                      const DotControl(),
-                ),
-              ),
             ],
           );
   }

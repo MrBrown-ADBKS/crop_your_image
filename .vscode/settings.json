@@ -1,3 +1,28 @@
 {
-  "dart.flutterSdkPath": ".fvm/versions/3.22.1"
+  "dart.flutterSdkPath": ".fvm/versions/3.22.1",
+  "workbench.colorCustomizations": {
+    "terminalCursor.background": "#ffffff",
+    "terminalCursor.foreground": "#ffffff",
+    "terminal.background": "#171520",
+    "terminal.foreground": "#26A269",
+    "terminal.ansiBlack": "#1D2021",
+    "terminal.ansiBrightBlack": "#665C54",
+    "terminal.ansiRed": "#A51D2D",
+    "terminal.ansiBrightRed": "#F66151",
+    "terminal.ansiBlue": "#26A269",
+    "terminal.ansiBrightBlue": "#8FF0A4",
+    "terminal.ansiYellow": "#C64600",
+    "terminal.ansiBrightYellow": "#FFBE6F",
+    "terminal.ansiGreen": "#8FF0A4",
+    "terminal.ansiBrightGreen": "#26A269",
+    "terminal.ansiMagenta": "#613583",
+    "terminal.ansiBrightMagenta": "#DC8ADD",
+    "terminal.ansiCyan": "#99C1F1",
+    "terminal.ansiBrightCyan": "#1A5FB4",
+    "terminal.ansiWhite": "#D0CFCC",
+    "terminal.ansiBrightWhite": "#FFFFFF",
+    "activityBar.background": "#1f6e45",
+    "titleBar.activeBackground": "#1f6e45",
+    "titleBar.activeForeground": "#FEFBFB"
+  }
 }
